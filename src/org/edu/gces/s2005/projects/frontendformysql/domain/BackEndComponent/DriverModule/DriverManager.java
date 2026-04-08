@@ -5,6 +5,8 @@
 package org.edu.gces.s2005.projects.frontendformysql.domain.BackEndComponent.DriverModule;
 
 import java.sql.Driver;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,16 +130,38 @@ public class DriverManager implements org.edu.gces.s2005.projects.frontendformys
             }
             
             String DbURL = this.DefaultDriver.getDatabaseServerURL();// + this.DefaultDriver.getDatabaseServerPortNo() + "/";
+            DbURL = this.normalizeMySqlJdbcUrl( DbURL );
             
             if( DbURL == null ){
                 this.setErrorMessage( "Database Server URL or Port No is null. \n Pleanse Use Driver Manage to Set empty value." );
                 return null; // URL was null
             }
+
+            if( !this.isValidMySqlJdbcUrl( DbURL ) ){
+                this.setErrorMessage( "Invalid JDBC URL. Use format: jdbc:mysql://host:3306/database" );
+                LOG.warn( "Rejected invalid JDBC URL '{}'", DbURL );
+                return null;
+            }
+
+            this.DefaultDriver.setDatabaseServerURL( DbURL );
                         
             if( this.DefaultDriver.getDriver() == null ){
                 this.setErrorMessage( "Drivar is not yet loaded. \n please load any." );
                 return null;
             }   
+
+            LOG.info(
+                "Attempting DB connection: driver='{}', url='{}', user='{}', passwordLength={}",
+                this.DefaultDriver.getDriverName(),
+                DbURL,
+                username,
+                Integer.valueOf( password.length )
+            );
+
+            if( !this.preflightSocketCheck( DbURL ) ){
+                this.setErrorMessage( "Cannot reach MySQL server. Check host/port and server status." );
+                return null;
+            }
             
             if( DefaultDriver.getDriver().acceptsURL(DbURL) ){
                 
@@ -153,6 +177,7 @@ public class DriverManager implements org.edu.gces.s2005.projects.frontendformys
             }
             else{
                 this.setErrorMessage( "Driver did not accepted Database Server URL" );
+                LOG.warn( "Driver '{}' rejected URL '{}'", this.DefaultDriver.getDriverName(), DbURL );
                 return null;
             }                
         }
@@ -160,6 +185,63 @@ public class DriverManager implements org.edu.gces.s2005.projects.frontendformys
             this.setErrorMessage( e.getMessage() );
             LOG.error( "Error while making database connection", e );
             return null;
+        }
+    }
+
+    private String normalizeMySqlJdbcUrl( String DbURL ){
+        if( DbURL == null )
+            return null;
+
+        String normalized = DbURL.trim();
+
+        if( normalized.equals( "jdbc:mysql://localhost" ) )
+            return "jdbc:mysql://localhost:3306/mysql";
+
+        if( normalized.matches( "^jdbc:mysql://[^/:?]+$" ) )
+            return normalized + ":3306/mysql";
+
+        if( normalized.matches( "^jdbc:mysql://[^/:?]+:[0-9]+$" ) )
+            return normalized + "/mysql";
+
+        return normalized;
+    }
+
+    private boolean isValidMySqlJdbcUrl( String DbURL ){
+        if( DbURL == null )
+            return false;
+
+        return DbURL.matches( "^jdbc:mysql://[^/:?]+:[0-9]+/[^?]+(\\?.*)?$" );
+    }
+
+    private boolean preflightSocketCheck( String DbURL ){
+        try{
+            java.net.URI uri = new java.net.URI( DbURL.substring( 5 ) ); // strip "jdbc:"
+            String host = uri.getHost();
+            int port = uri.getPort() == -1 ? 3306 : uri.getPort();
+
+            if( host == null || host.equals( "" ) ){
+                LOG.warn( "Cannot preflight socket: host not found in URL '{}'", DbURL );
+                return false;
+            }
+
+            Socket socket = new Socket();
+            try{
+                socket.connect( new InetSocketAddress( host, port ), 2000 );
+                LOG.info( "Socket preflight succeeded: {}:{}", host, Integer.valueOf( port ) );
+                return true;
+            }
+            finally{
+                try{
+                    socket.close();
+                }
+                catch( Exception e ){
+                    // ignore close failure
+                }
+            }
+        }
+        catch( Exception e ){
+            LOG.warn( "Socket preflight failed for URL '{}': {}", DbURL, e.getMessage() );
+            return false;
         }
     }
         

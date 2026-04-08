@@ -593,6 +593,9 @@ public class DatabaseTree extends javax.swing.JPanel {
    {
        try{
        String[] DbList = this.Engine.getDatabaseReader().readDatabaseList();
+
+       if( DbList == null )
+           return;
        
        for( int i = 0;i< DbList.length ;i++ )
        {

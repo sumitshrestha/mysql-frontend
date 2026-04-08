@@ -19,6 +19,7 @@ public class DriverPanel extends javax.swing.JPanel implements org.edu.gces.s200
     public DriverPanel( org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.BackEnd Engine ) {
         this.Engine = Engine;
         initComponents();
+        this.DriverName.setText( "com.mysql.cj.jdbc.Driver" );
     }
     
     /*** This method is called from within the constructor to

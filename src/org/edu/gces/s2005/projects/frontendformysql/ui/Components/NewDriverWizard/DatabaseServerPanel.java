@@ -19,6 +19,9 @@ public class DatabaseServerPanel extends javax.swing.JPanel implements org.edu.g
     public DatabaseServerPanel( org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.BackEnd Engine ) {
         this.Engine = Engine;
         initComponents();
+        this.DbServerNm.setText( "mysql" );
+        this.PtNo.setText( "3306" );
+        this.DbURL.setText( "jdbc:mysql://localhost:3306/mysql" );
     }
     
     /*** This method is called from within the constructor to
@@ -49,14 +52,14 @@ public class DatabaseServerPanel extends javax.swing.JPanel implements org.edu.g
 
         jLabel4.setText("Port No");
 
-        PtNo.setEditable(false);
-        PtNo.setFocusable(false);
+        PtNo.setEditable(true);
+        PtNo.setFocusable(true);
 
         jLabel5.setText("like  3306");
 
         jLabel6.setText("Database URL");
 
-        jLabel7.setText("like  jdbc:mysql://localhost");
+        jLabel7.setText("like  jdbc:mysql://localhost:3306/mysql");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -140,7 +143,10 @@ public class DatabaseServerPanel extends javax.swing.JPanel implements org.edu.g
     }
     
     private boolean isValid( String DbSrvName, String DbSrvURL ){
-        return ! ( DbSrvURL.equals( "" ) || DbSrvName.equals( "" ) );
+        if( DbSrvURL.equals( "" ) || DbSrvName.equals( "" ) )
+            return false;
+
+        return DbSrvURL.matches( "^jdbc:mysql://[^/:?]+:[0-9]+/[^?]+(\\?.*)?$" );
     }
     
     public boolean onBack(){

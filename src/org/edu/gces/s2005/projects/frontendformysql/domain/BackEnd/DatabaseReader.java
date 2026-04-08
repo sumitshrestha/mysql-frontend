@@ -13,6 +13,8 @@
 package org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd;
 
 import org.edu.gces.s2005.projects.frontendformysql.domain.BackEndInterfaces.TableTriggerInterface;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /***
  * This class is meant to read the database server to get the database domain object so that it could be used by any UI layer object.
@@ -22,6 +24,8 @@ import org.edu.gces.s2005.projects.frontendformysql.domain.BackEndInterfaces.Tab
  */
 
 public class DatabaseReader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DatabaseReader.class);
     
     /*** Creates a new instance of DatabaseReader */
     public DatabaseReader( org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.BackEnd  eng, org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.QueryGenerator gen, org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.QueryExecuter ex ) {
@@ -50,26 +54,50 @@ public class DatabaseReader {
      * func for getting the list of database in the server.
      */             
     public String[] readDatabaseList(){
+        java.util.LinkedHashSet<String> dbNames = new java.util.LinkedHashSet<String>();
+
         try{
-        final int DATABASE_INDEX = 0;
-        
-        java.sql.ResultSet rs =  this.DatabaseInfo.getCatalogs();
-        String [][] Db = this.getArrayofResultSet( rs );
-        String[] DbList= new String[ Db.length ];
-        
-        for( int i= 0; i< DbList.length; i++ ){
-            DbList[ i ] = Db[ i ][ DATABASE_INDEX ];
-        }
-        
-        return DbList;
-        }
-        catch( java.sql.SQLException e ){
-            System.out.println( "exception while reading database " + e  );            
+            java.sql.ResultSet rs = this.DatabaseInfo.getCatalogs();
+            while( rs.next() ){
+                String name = rs.getString( 1 );
+                if( name != null && !name.equals( "" ) )
+                    dbNames.add( name );
+            }
         }
         catch( Exception e ){
-            System.out.println( "other exception while reading database " + e  );            
+            LOG.warn( "Unable to enumerate databases from DatabaseMetaData.getCatalogs()", e );
         }
-        return null; // on both occasion return null
+
+        try{
+            java.sql.ResultSet rs = this.DatabaseInfo.getSchemas();
+            while( rs.next() ){
+                String name = rs.getString( 1 );
+                if( name != null && !name.equals( "" ) )
+                    dbNames.add( name );
+            }
+        }
+        catch( Exception e ){
+            LOG.debug( "Unable to enumerate schemas from DatabaseMetaData.getSchemas()", e );
+        }
+
+        try{
+            if( this.Exec.executeQuery( "SHOW DATABASES" ) == org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.QueryExecuter.EXECUTE_SUCCESS ){
+                java.sql.ResultSet rs = this.Exec.returnResult();
+                while( rs != null && rs.next() ){
+                    String name = rs.getString( 1 );
+                    if( name != null && !name.equals( "" ) )
+                        dbNames.add( name );
+                }
+            }
+        }
+        catch( Exception e ){
+            LOG.debug( "Unable to enumerate databases with SHOW DATABASES", e );
+        }
+
+        if( dbNames.isEmpty() )
+            return new String[]{};
+
+        return dbNames.toArray( new String[]{} );
     }
     
     public String[] returnTableList( String DbName){
