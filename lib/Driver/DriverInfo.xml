@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="windows-1252"?> 
+<!DOCTYPE DriverInfo [
+<!ELEMENT DriverInfo (Driver)*>
+<!ELEMENT Driver EMPTY >    
+    <!ATTLIST DriverInfo DefaultDriver IDREF #REQUIRED >
+    <!ATTLIST Driver
+                    DriverID ID #REQUIRED
+                    DriverName CDATA #REQUIRED
+                    DriverJarFileName CDATA #REQUIRED
+                    DatabaseServerName CDATA #IMPLIED
+                    DatabaseServerURL CDATA #IMPLIED >
+]>
+
+<DriverInfo DefaultDriver="_-1">
+    <Driver DriverName="null" DriverID="_-1" DriverJarFileName="null" />
+</DriverInfo>

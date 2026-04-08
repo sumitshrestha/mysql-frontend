@@ -34,7 +34,7 @@ public class Main {
     public static void main(String[] args) {
         // TODO code application logic here
         String mess = org.edu.gces.s2005.projects.frontendformysql.splash.init( );        
-        if( mess != splash.INITIALIZED ){
+        if( !splash.INITIALIZED.equals( mess ) ){
             LOG.warn( "Splash init failed: {}. Initializing without splash screen...", mess );
             Factory.initializeSystemStatus();
             org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.BackEnd Engine = Factory.createEngine();
