@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="windows-1252" standalone="yes"?>
+
+<!--                         !! RAM !!
+-->
+
+<!--
+    Document   : InitialDriverInfo.xml
+    Created on : February 13, 2008, 9:52 AM
+    Author     : Sumit Shrestha
+    Description:
+        Purpose of the document ::==>
+        
+        This XML document is the initial point from which the driver will start working.
+        The system will create a file called DriverInfo.xml with its content at start. 
+        The driver manager will then read it first getting information about available drivers.
+        
+-->
+
+<!DOCTYPE DriverInfo [
+    <!ELEMENT DriverInfo (Driver)*>
+    <!ELEMENT Driver EMPTY >
+    
+    <!ATTLIST DriverInfo DefaultDriver IDREF #REQUIRED >
+    <!ATTLIST Driver 
+                    DriverID ID #REQUIRED
+                    DriverName CDATA #REQUIRED
+                    DriverJarFileName CDATA #REQUIRED
+                    DatabaseServerName CDATA #IMPLIED 
+                    DatabaseServerURL CDATA #IMPLIED >
+]>
+
+<DriverInfo DefaultDriver="_-1">
+    <Driver DriverName="null" DriverID="_-1" DriverJarFileName="null" />
+</DriverInfo>
