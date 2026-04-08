@@ -36,7 +36,7 @@ public class SystemInitializer {
     private boolean doesDriverInformationExists(){
         try{
             java.io.File temp = new java.io.File( SystemInformationProvider.getDriverFilePath());
-            return temp.isFile();
+            return temp.isFile() && temp.length() > 0;
         }
         catch( Exception e ){
             return false;
@@ -104,12 +104,11 @@ public class SystemInitializer {
             org.edu.gces.s2005.projects.frontendformysql.domain.BackEndComponent.IO.IOManager man = new org.edu.gces.s2005.projects.frontendformysql.domain.BackEndComponent.IO.IOManager();
             man.setDefaultExtension( "xml" );
             man.setBuffer( new java.lang.StringBuffer ( InitialDriverInfo.Info ) );
-            if( temp.createNewFile() ){
-                man.save( temp.getAbsolutePath() );
-                return true;
-            }
-            else
-                return false;
+            if( !temp.exists() )
+                temp.createNewFile();
+
+            man.save( temp.getAbsolutePath() );
+            return true;
         }
         catch( Exception e ){
             return false;

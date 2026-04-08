@@ -9,11 +9,16 @@
 
 package org.edu.gces.s2005.projects.frontendformysql.ui.parent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author  Sumit Shrestha
  */
 public class DriverManagerDialog extends javax.swing.JDialog implements org.edu.gces.s2005.projects.frontendformysql.domain.BackEndInterfaces.DriverListener {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DriverManagerDialog.class);
     
     /*** Creates new form DriverManager */
     public DriverManagerDialog(java.awt.Frame parent, org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.BackEnd Engine ) {
@@ -253,11 +258,13 @@ public class DriverManagerDialog extends javax.swing.JDialog implements org.edu.
     public void onDefaultDriverChanged( org.edu.gces.s2005.projects.frontendformysql.domain.BackEndData.Driver NewDefaultDriver, org.edu.gces.s2005.projects.frontendformysql.domain.BackEndData.Driver OldDefaultDriver ){        
         try{         
      //       System.out.println( "main culprit:: this is old "+  OldDefaultDriver.getDriverName() );
+                if( OldDefaultDriver != null ){
             org.edu.gces.s2005.projects.frontendformysql.ui.Components.DriverInfoPanel RemovedDefaultDriverPanel = this.getDriverPanel( OldDefaultDriver.getDriverID() );
             RemovedDefaultDriverPanel.setDefault( false );
+                }
         }
         catch( Exception e ){
-            System.out.println( "exception " + e.getMessage() );
+            LOG.error( "Error while switching default driver UI state", e );
         }
     }
     

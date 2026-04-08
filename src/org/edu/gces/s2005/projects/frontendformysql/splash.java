@@ -8,11 +8,16 @@
 
 package org.edu.gces.s2005.projects.frontendformysql;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /***
  *
  * @author Sumit Shrestha
  */
 public class splash {
+    private static final Logger LOG = LoggerFactory.getLogger(splash.class);
+
     private splash(){
         
     }
@@ -25,7 +30,7 @@ public class splash {
     public static String init( ){
         try{
             final java.awt.SplashScreen splash = java.awt.SplashScreen.getSplashScreen();
-            System.out.println("splash obtained");
+            LOG.info("Splash obtained");
             if (splash == null) {                
                 return "SplashScreen.getSplashScreen() returned null";
             }
@@ -59,6 +64,7 @@ public class splash {
             return INITIALIZED;
         }
         catch( Exception e ){
+            LOG.error("Error during splash initialization", e);
             return e.getMessage();
         }
     }

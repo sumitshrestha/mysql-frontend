@@ -48,7 +48,7 @@ public class DriverPanel extends javax.swing.JPanel implements org.edu.gces.s200
 
         jLabel3.setText("Driver Location");
 
-        jLabel4.setText("like          com.mysql.jdbc.Driver");
+        jLabel4.setText("like          com.mysql.cj.jdbc.Driver");
 
         jLabel5.setText("http://");
 

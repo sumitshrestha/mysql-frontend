@@ -5,12 +5,16 @@
 package org.edu.gces.s2005.projects.frontendformysql.domain.BackEndComponent.DriverModule;
 
 import java.sql.Driver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /***
  * This class is 
  * @author Sumit Shrestha
  */
 public class DriverManager implements org.edu.gces.s2005.projects.frontendformysql.domain.BackEndComponent.DriverModule.DriverManagerInterface {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DriverManager.class);
     
     public DriverManager( org.edu.gces.s2005.projects.frontendformysql.domain.BackEndComponent.IO.IOManager IOMan ){
         
@@ -49,6 +53,14 @@ public class DriverManager implements org.edu.gces.s2005.projects.frontendformys
     private void initializeDriverInfo(){
         try{
         final String absDriverInfoPath = org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.System.SystemInformationProvider.getAbsolutePathOfDefaultFolder() + java.io.File.separatorChar +org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.System.SystemInformationProvider.getDriverFilePath();
+
+        java.io.File driverInfoFile = new java.io.File( absDriverInfoPath );
+        if( !driverInfoFile.exists() || driverInfoFile.length() == 0 ){
+            org.edu.gces.s2005.projects.frontendformysql.domain.BackEndComponent.IO.IOManager man = new org.edu.gces.s2005.projects.frontendformysql.domain.BackEndComponent.IO.IOManager();
+            man.setDefaultExtension( "xml" );
+            man.setBuffer( new java.lang.StringBuffer( org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.System.InitialDriverInfo.Info ) );
+            man.save( absDriverInfoPath );
+        }
         
         java.io.InputStream ip = new java.io.FileInputStream( absDriverInfoPath );
         
@@ -59,10 +71,11 @@ public class DriverManager implements org.edu.gces.s2005.projects.frontendformys
         javax.xml.parsers.SAXParser SaxParser = SaxFactory.newSAXParser();
         
         SaxParser.parse(ip, SaxHandler );
+        ip.close();
         
         }
         catch( Exception e ){
-            System.out.println( "message while reading sax file..." +e.getMessage() );
+            LOG.error( "message while reading sax file...{}", e.getMessage(), e );
         }
     }
             
@@ -99,8 +112,6 @@ public class DriverManager implements org.edu.gces.s2005.projects.frontendformys
     public java.sql.DatabaseMetaData makeConnection( String username, char[] password ){
         try{
             
-            String DbURL = this.DefaultDriver.getDatabaseServerURL();// + this.DefaultDriver.getDatabaseServerPortNo() + "/";
-            
             if( username == null || password == null ){ // usernamne or password is null
                 this.setErrorMessage( "Either username or password is null" );
                 return null;
@@ -115,6 +126,8 @@ public class DriverManager implements org.edu.gces.s2005.projects.frontendformys
                 this.setErrorMessage( "Default Driver is not selected or not yet loaded. please go to driver manager to select any" );
                 return null;
             }
+            
+            String DbURL = this.DefaultDriver.getDatabaseServerURL();// + this.DefaultDriver.getDatabaseServerPortNo() + "/";
             
             if( DbURL == null ){
                 this.setErrorMessage( "Database Server URL or Port No is null. \n Pleanse Use Driver Manage to Set empty value." );
@@ -145,6 +158,7 @@ public class DriverManager implements org.edu.gces.s2005.projects.frontendformys
         }
         catch( Exception e ){
             this.setErrorMessage( e.getMessage() );
+            LOG.error( "Error while making database connection", e );
             return null;
         }
     }
@@ -220,6 +234,10 @@ public class DriverManager implements org.edu.gces.s2005.projects.frontendformys
     private Driver loadDriver(final String DriverJarFileName, String DriverName) {
         try{
         
+        // Prefer the current MySQL driver class if the legacy class name is provided.
+        if( "com.mysql.jdbc.Driver".equals( DriverName ) )
+            DriverName = "com.mysql.cj.jdbc.Driver";
+
         java.sql.Driver d = this.DriverLoader.loadDriver(DriverName, DriverJarFileName);
 
         if (d == null) {

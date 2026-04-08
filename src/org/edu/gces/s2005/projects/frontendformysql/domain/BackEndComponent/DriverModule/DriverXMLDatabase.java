@@ -14,8 +14,15 @@ public class DriverXMLDatabase implements org.edu.gces.s2005.projects.frontendfo
     public DriverXMLDatabase(){        
             try{
             javax.xml.parsers.DocumentBuilderFactory Fact = javax.xml.parsers.DocumentBuilderFactory.newInstance();            
-            javax.xml.parsers.DocumentBuilder Builder = Fact.newDocumentBuilder();            
-            DriverInfo = Builder.parse( new java.io.File( absDriverInfoPath ) );  
+            javax.xml.parsers.DocumentBuilder Builder = Fact.newDocumentBuilder();
+            java.io.File driverFile = new java.io.File( absDriverInfoPath );
+            if( driverFile.exists() && driverFile.length() > 0 ){
+                DriverInfo = Builder.parse( driverFile );
+            }
+            if( DriverInfo == null ){
+                DriverInfo = Builder.parse( new java.io.ByteArrayInputStream(
+                    org.edu.gces.s2005.projects.frontendformysql.domain.BackEnd.System.InitialDriverInfo.Info.getBytes( "windows-1252" ) ) );
+            }
             }
             catch( Exception e ){
                 // do nothing
