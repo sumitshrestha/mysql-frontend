@@ -406,29 +406,28 @@ public class DatabaseReader {
     
    public final static String[][] getArrayofResultSet( java.sql.ResultSet rs )
    {
-       String[][] array = null;
-       
        try{
+           if( rs == null )
+               return new String[][]{};
+
            int coll = rs.getMetaData().getColumnCount();
-           int row = getRowCountofResultSet(rs);
-           
-           array = new String[ row ][ coll ];
-           for( int i=0 ;i<row; i++)
-           {
-           
-               for( int j=0;j< coll;j++)
-               {
-                   array[i][j] = rs.getString( j + 1);
-               }               
-                   rs.next();
+           java.util.ArrayList<String[]> rows = new java.util.ArrayList<String[]>();
+
+           while( rs.next() ){
+               String[] row = new String[ coll ];
+               for( int j = 0; j < coll; j++ ){
+                   row[j] = rs.getString( j + 1 );
+               }
+               rows.add( row );
            }
-           rs.first();
+
+           return rows.toArray( new String[ rows.size() ][ coll ] );
        }
        catch( Exception e)
        {
-           System.out.println( "exception while converting to array "+ e );           
+           System.out.println( "exception while converting to array "+ e );
+           return new String[][]{};
        }
-       return array;
    }
 
    

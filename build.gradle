@@ -1,0 +1,59 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'org.edu.gces.s2005.projects'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Keep logging jars local to the project, matching the current setup.
+    implementation fileTree(dir: 'lib/logging', include: ['*.jar'])
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+            include '**/*.java'
+        }
+        resources {
+            srcDirs = ['src']
+            exclude '**/*.java'
+        }
+    }
+}
+
+application {
+    mainClass = 'org.edu.gces.s2005.projects.frontendformysql.Main'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 8
+    options.encoding = 'UTF-8'
+}
+
+run {
+    // SystemInitializer expects lib/Driver under the working directory.
+    workingDir = projectDir
+}
+
+jar {
+    manifest {
+        attributes('Main-Class': application.mainClass.get())
+    }
+}
+
+task copyRuntimeAssets(type: Copy) {
+    from('about') {
+        into 'about'
+    }
+    from('lib/Driver') {
+        into 'lib/Driver'
+    }
+    into "$buildDir/runtime-assets"
+}
